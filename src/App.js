@@ -1,26 +1,44 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import "./App.css";
+import styled from "styled-components";
+import Counter from "./Components/Counter";
+
+const AppCounter = styled.div``;
 
 class App extends Component {
+  state = {
+    counter: 0,
+    appName: "React js"
+  };
+
+  onClickAddValueHandler = arg => {
+    this.setState({
+      counter: this.state.counter + arg
+    });
+  };
+  resetHanlder = () => {
+    this.setState({
+      counter: 0
+    });
+  };
+
+  onClickDeleteValueHandler = arg => {
+    this.setState({
+      counter: this.state.counter - arg
+    });
+  };
+
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
+      <AppCounter className="App">
+        <button onClick={this.resetHanlder}>Reset</button>
+        <Counter
+          style={{ border: "1px solid green" }}
+          value={this.state.counter}
+          clicked={() => this.onClickAddValueHandler(2)}
+          deleted={this.onClickDeleteValueHandler.bind(this, 10)}
+        />
+      </AppCounter>
     );
   }
 }
