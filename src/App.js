@@ -1,44 +1,113 @@
 import React, { Component } from "react";
 import "./App.css";
 import styled from "styled-components";
-import Counter from "./Components/Counter";
+import Pagination from "./Components/Pagination";
+import Table from "./Components/Table";
+import Axios from "axios";
 
-const AppCounter = styled.div``;
+const NavApp = styled.div`
+  position: relative;
+  top: 50px;
+  left: 50px;
+`;
+const TabController = styled.div`
+  position: absolute;
+  top: 10px;
+  width: 500px;
+  margin: 0 auto;
+`;
 
 class App extends Component {
   state = {
-    counter: 0,
-    appName: "React js"
+    users: [],
+    selected: [true, false],
+    nbrOfusers: 7,
+    currentPage: 1
   };
 
-  onClickAddValueHandler = arg => {
-    this.setState({
-      counter: this.state.counter + arg
+  oldRequest() {
+    Axios.get("https://jsonplaceholder.typicode.com/users").then(response => {
+      let trasUsers = response.data.map(user => {
+        let randomisSelected = Math.floor(
+          Math.random() * this.state.selected.length
+        );
+        return { ...user, liked: this.state.selected[randomisSelected] };
+      });
+      // console.log(trasUsers);
+      this.setState({
+        users: trasUsers
+      });
     });
+  }
+
+  sendRequest = () => {
+    let nbrOfusers = 5;
+    if (this.state.nbrOfusers !== nbrOfusers) {
+      nbrOfusers = this.state.nbrOfusers;
+    }
+    Axios.get("https://randomuser.me/api/?results=" + nbrOfusers + "").then(
+      response => {
+        //console.log(response.data.results);
+        const newusers = response.data.results.map((user, index) => {
+          let randomisSelected = Math.floor(
+            Math.random() * this.state.selected.length
+          );
+          const { name, picture, location, nat } = user;
+          return {
+            id: index,
+            fullname: name.first + " " + name.last,
+            location,
+            picture,
+            nat,
+            liked: this.state.selected[randomisSelected]
+          };
+        });
+        // console.log(newusers);
+        this.setState({
+          users: newusers
+        });
+      }
+    );
   };
-  resetHanlder = () => {
+
+  onDeleteUserHandler = userId => {
+    console.log("onDeleteUserHandler", userId);
+    let newusers = [...this.state.users];
+    const data = newusers.filter(user => user.id !== userId);
     this.setState({
-      counter: 0
+      users: data
     });
   };
 
-  onClickDeleteValueHandler = arg => {
-    this.setState({
-      counter: this.state.counter - arg
-    });
+  componentDidMount = () => {
+    this.sendRequest();
+  };
+
+  onPageChaneHanlder = currentPage => {
+    console.log(currentPage);
   };
 
   render() {
     return (
-      <AppCounter className="App">
-        <button onClick={this.resetHanlder}>Reset</button>
-        <Counter
-          style={{ border: "1px solid green" }}
-          value={this.state.counter}
-          clicked={() => this.onClickAddValueHandler(2)}
-          deleted={this.onClickDeleteValueHandler.bind(this, 10)}
-        />
-      </AppCounter>
+      <React.Fragment>
+        <TabController>
+          <button className="btn btn-warning btn-sm" onClick={this.sendRequest}>
+            Reload Users
+          </button>
+        </TabController>
+        <NavApp>
+          <Table
+            appusers={this.state.users}
+            onDelete={this.onDeleteUserHandler}
+          />
+          <Pagination
+            currentPage={this.state.currentPage}
+            itmes={this.state.users.length}
+            pageSize={4}
+            onPageChane={this.onPageChaneHanlder}
+          />
+        </NavApp>
+      </React.Fragment>
     );
   }
 }
